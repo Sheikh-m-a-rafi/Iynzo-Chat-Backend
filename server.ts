@@ -6,6 +6,9 @@ import { setServers } from "node:dns";
 import { clerkMiddleware } from '@clerk/express'
 import userRouter from "./routes/userRoutes.js";
 import messageRouter from "./routes/messageRoutes.js";
+import storyRouter from "./routes/storyRoutes.js";
+import http from 'http'
+import { initSocketServer } from "./socket/socketManager.js";
 
 // Configure DNS
 setServers(["1.1.1.1", "1.0.0.1"]);
@@ -28,6 +31,7 @@ app.get('/', (req: Request, res: Response) => {
 
 app.use("/api/users", userRouter);
 app.use("/api/messages", messageRouter);
+app.use("/api/stories", storyRouter);
 
 // Error handler
 
@@ -38,7 +42,11 @@ app.use((err: any, _req: Request, res: Response, next: NextFunction)=> {
 
 })
 
+// HTTP server and attach WebSocket
 
-app.listen(port, () => {
+const server = http.createServer(app)
+initSocketServer(server)
+
+server.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });
